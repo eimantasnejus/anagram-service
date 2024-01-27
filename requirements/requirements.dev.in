@@ -1,0 +1,11 @@
+-r requirements.in
+
+safety
+django-stubs
+mypy
+flake8
+flake8-pyproject
+ruff
+colorlog
+django-debug-toolbar
+django-extensions

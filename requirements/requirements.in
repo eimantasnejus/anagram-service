@@ -1,0 +1,14 @@
+django
+djangorestframework
+psycopg2-binary
+drf-spectacular
+pyyaml
+django-solo
+django-ckeditor
+celery
+redis
+django-cors-headers
+djangorestframework-simplejwt
+model-bakery
+django-import-export
+django-filter
