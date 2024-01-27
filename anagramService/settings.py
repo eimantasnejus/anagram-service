@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     "django_extensions",
     "import_export",
     # Local apps
+    "anagram.apps.AnagramConfig",
     # ...
 ]
 
