@@ -31,11 +31,6 @@ shell:
 superuser:
 	python manage.py createsuperuser
 
-.PHONY: up-depenencies-only
-up-depenencies-only:
-	test -f .env || touch .env
-	docker-compose -f docker-compose.dev.yml up -d --build --force-recreate db
-
 .PHONY: load-fixtures
 load-fixtures:
 	python manage.py loaddata word
