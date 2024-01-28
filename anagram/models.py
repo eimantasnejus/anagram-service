@@ -6,6 +6,7 @@ class Word(models.Model):
     sorted_word = models.CharField(max_length=100)
     sorted_lowercase_word = models.CharField(max_length=100)
     is_proper_noun = models.BooleanField(default=False)
+    length = models.IntegerField()  # TODO: Could be calculated database field.
 
     def __str__(self):
         return self.word

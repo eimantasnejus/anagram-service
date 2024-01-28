@@ -46,7 +46,6 @@ INSTALLED_APPS = [
     "import_export",
     # Local apps
     "anagram.apps.AnagramConfig",
-    # ...
 ]
 
 MIDDLEWARE = [

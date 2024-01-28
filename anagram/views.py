@@ -1,3 +1,4 @@
+from django.db.models import Avg, Count, Max, Min
 from django.shortcuts import get_object_or_404
 from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
@@ -12,7 +13,7 @@ from anagram.models import Word
 from anagram.serializers import AnagramsListSerializer, WordInputSerializer
 
 
-class WordsAPIView(APIView):
+class WordAPIView(APIView):
     permission_classes = [AllowAny]
 
     @extend_schema(request=AnagramsListSerializer, responses={status.HTTP_201_CREATED: None})
@@ -22,7 +23,13 @@ class WordsAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         words = serializer.validated_data["anagrams"]
         for word in words:
-            Word.objects.get_or_create(word=word, sorted_word="".join(sorted(word)))
+            Word.objects.get_or_create(
+                word=word,
+                sorted_word="".join(sorted(word)),
+                sorted_lowercase_word="".join(sorted(word.lower())),
+                is_proper_noun=word.istitle(),
+                length=len(word),
+            )
         return Response(status=status.HTTP_201_CREATED)
 
     @extend_schema(responses={status.HTTP_200_OK: None})
@@ -42,6 +49,40 @@ class WordViewSet(ViewSet):
         word_instance = get_object_or_404(Word, word=word)
         word_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(detail=False, methods=["get"], url_path=r"length-stats")
+    def get_word_length_statistics(self, request):
+        """Get statistics about the database."""
+        stats = Word.objects.aggregate(
+            words_count=Count("id"),
+            min_word_length=Min("length"),
+            max_word_length=Max("length"),
+            average_word_length=Avg("length"),
+        )
+        median = self._calculate_median_word_length()
+        average = stats["average_word_length"]
+        return Response(
+            {
+                "total_words": stats["words_count"],
+                "min_word_length": stats["min_word_length"],
+                "max_word_length": stats["max_word_length"],
+                "median_word_length": float(f"{median:.4f}") if median is not None else None,
+                "average_word_length": float(f"{average:.4f}") if average is not None else None,
+            },
+            status=status.HTTP_200_OK,
+        )
+
+    @staticmethod
+    def _calculate_median_word_length() -> float | None:
+        lengths = list(Word.objects.values_list("length", flat=True).order_by("length"))
+        if not lengths:
+            return None
+
+        count = len(lengths)
+        if count % 2 == 1:
+            return lengths[count // 2]
+        else:
+            return (lengths[count // 2 - 1] + lengths[count // 2]) / 2
 
 
 class AnagramViewSet(GenericViewSet):
