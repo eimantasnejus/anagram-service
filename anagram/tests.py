@@ -217,6 +217,184 @@ class TestWordAdvancedAPI:
         "test",
         [
             {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "min_group_size": 2,
+                "expected_response_status": 200,
+                "expected_total_count": 3,
+                "expected_groups": {
+                    0: {"count": 4, "words": ["foo", "ofo", "oof", "Foo"]},
+                    1: {"count": 2, "words": ["bar", "rab"]},
+                    2: {"count": 2, "words": ["baz", "zab"]},
+                },
+            },
+            {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "min_group_size": 2,
+                "page": 1,
+                "expected_response_status": 200,
+                "expected_total_count": 3,
+                "expected_groups": {
+                    0: {"count": 4, "words": ["foo", "ofo", "oof", "Foo"]},
+                    1: {"count": 2, "words": ["bar", "rab"]},
+                    2: {"count": 2, "words": ["baz", "zab"]},
+                },
+            },
+            {
+                "words": [
+                    "ab",
+                    "ba",
+                    "bc",
+                    "cb",
+                    "cd",
+                    "dc",
+                    "de",
+                    "ed",
+                    "ef",
+                    "fe",
+                    "fg",
+                    "gf",
+                    "gh",
+                    "hg",
+                    "hi",
+                    "ih",
+                    "ij",
+                    "ji",
+                    "jk",
+                    "kj",
+                    "kl",
+                    "lk",
+                ],
+                "min_group_size": 2,
+                "page": 1,
+                "expected_response_status": 200,
+                "expected_total_count": 11,
+                "expected_groups": {
+                    0: {"count": 2, "words": ["ab", "ba"]},
+                    1: {"count": 2, "words": ["bc", "cb"]},
+                    2: {"count": 2, "words": ["cd", "dc"]},
+                    3: {"count": 2, "words": ["de", "ed"]},
+                    4: {"count": 2, "words": ["ef", "fe"]},
+                    5: {"count": 2, "words": ["fg", "gf"]},
+                    6: {"count": 2, "words": ["gh", "hg"]},
+                    7: {"count": 2, "words": ["hi", "ih"]},
+                    8: {"count": 2, "words": ["ij", "ji"]},
+                    9: {"count": 2, "words": ["jk", "kj"]},
+                },
+            },
+            {
+                "words": [
+                    "ab",
+                    "ba",
+                    "bc",
+                    "cb",
+                    "cd",
+                    "dc",
+                    "de",
+                    "ed",
+                    "ef",
+                    "fe",
+                    "fg",
+                    "gf",
+                    "gh",
+                    "hg",
+                    "hi",
+                    "ih",
+                    "ij",
+                    "ji",
+                    "jk",
+                    "kj",
+                    "kl",
+                    "lk",
+                ],
+                "min_group_size": 2,
+                "page": 2,
+                "expected_response_status": 200,
+                "expected_total_count": 11,
+                "expected_groups": {
+                    0: {"count": 2, "words": ["kl", "lk"]},
+                },
+            },
+            {
+                "words": [
+                    "ab",
+                    "ba",
+                    "bc",
+                    "cb",
+                    "cd",
+                    "dc",
+                    "de",
+                    "ed",
+                    "ef",
+                    "fe",
+                    "fg",
+                    "gf",
+                    "gh",
+                    "hg",
+                    "hi",
+                    "ih",
+                    "ij",
+                    "ji",
+                    "jk",
+                    "kj",
+                    "kl",
+                    "lk",
+                ],
+                "min_group_size": 2,
+                "page": 3,
+                "expected_response_status": 404,  # Page out of range.
+            },
+            {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "min_group_size": 3,
+                "expected_response_status": 200,
+                "expected_total_count": 1,
+                "expected_groups": {
+                    0: {"count": 4, "words": ["foo", "ofo", "oof", "Foo"]},
+                },
+            },
+            {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "min_group_size": 5,
+                "expected_response_status": 200,
+                "expected_total_count": 0,
+                "expected_groups": {},
+            },
+            {
+                "words": [],
+                "min_group_size": 2,
+                "expected_response_status": 200,
+                "expected_total_count": 0,
+                "expected_groups": {},
+            },
+            {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "min_group_size": 1,
+                "expected_response_status": 400,  # Minimum group size must be at least 2.
+            },
+        ],
+    )
+    def test_get_anagram_groups_above_x(self, client, test):
+        # Setup.
+        self._setup_words(client, test["words"])
+
+        # Do.
+        url = f'{reverse("words-get-anagram-groups-of-at-least-size-x")}?min_group_size={test["min_group_size"]}'
+        if "page" in test:
+            url = f"{url}&page={test['page']}"
+        response = client.get(url, content_type="application/json")
+
+        # Check.
+        assert response.status_code == test["expected_response_status"], response.data
+        if test["expected_response_status"] == 200:
+            assert response.data["count"] == test["expected_total_count"]
+            for index, group in enumerate(response.data["results"]):
+                assert group["count"] == test["expected_groups"][index]["count"]
+                assert sorted(group["words"]) == sorted(test["expected_groups"][index]["words"])
+
+    @pytest.mark.parametrize(
+        "test",
+        [
+            {
                 "words": ["foo", "bar", "baz"],
                 "expected_response_status": 200,
                 "expected_is_anagram": False,
