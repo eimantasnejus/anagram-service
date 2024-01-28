@@ -4,10 +4,12 @@ from drf_spectacular.types import OpenApiTypes
 from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
+from rest_framework.exceptions import ValidationError
+from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.viewsets import GenericViewSet, ViewSet
+from rest_framework.viewsets import GenericViewSet
 
 from anagram.helpers import calculate_median, to_python_bool
 from anagram.models import Word
@@ -15,6 +17,7 @@ from anagram.serializers import (
     AnagramsListSerializer,
     IsAnagramSerializer,
     MostAnagramsSerializer,
+    PaginatedAnagramGroupSerializer,
     SimpleWordSerializer,
     WordLengthStatsSerializer,
     WordListSerializer,
@@ -40,16 +43,18 @@ class WordAPIView(APIView):
             )
         return Response(status=status.HTTP_201_CREATED)
 
-    @extend_schema(responses={status.HTTP_200_OK: None})
+    @extend_schema(responses={status.HTTP_204_NO_CONTENT: None})
     def delete(self, request):
         """Delete all words from the database."""
         Word.objects.all().delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class WordViewSet(ViewSet):
+class WordViewSet(GenericViewSet):
     permission_classes = [AllowAny]
     serializer_class = SimpleWordSerializer
+    pagination_class = PageNumberPagination
+    pagination_class.page_size = 10
 
     @action(detail=False, methods=["delete"], url_path=r"<(?P<word>\w+)>.json")
     def delete_word(self, request, word):
@@ -91,6 +96,50 @@ class WordViewSet(ViewSet):
         words_in_biggest_group = Word.objects.filter(sorted_lowercase_word=biggest_group["sorted_lowercase_word"])
         serializer = MostAnagramsSerializer({"count": len(words_in_biggest_group), "words": words_in_biggest_group})
         return Response(serializer.data)
+
+    @extend_schema(
+        parameters=[
+            OpenApiParameter(
+                name="min_group_size",
+                description="Minimum size of anagram group.",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+                default=10,
+            ),
+            OpenApiParameter(
+                name="page",
+                description="Page number.",
+                type=OpenApiTypes.INT,
+                location=OpenApiParameter.QUERY,
+            ),
+        ],
+        responses=PaginatedAnagramGroupSerializer,
+    )
+    @action(
+        detail=False,
+        methods=["get"],
+        url_path=r"anagram-groups",
+        serializer_class=MostAnagramsSerializer(many=True),
+    )
+    def get_anagram_groups_of_at_least_size_x(self, request):
+        """Get all anagram groups that are at least of size x. Minimum size is 2, default is 10."""
+        size = request.query_params.get("min_group_size") or 10
+        if int(size) < 2:
+            raise ValidationError("Minimum group size must be at least 2.")
+        anagram_groups = Word.objects.values("sorted_lowercase_word").annotate(count=Count("id"))
+        anagram_groups = anagram_groups.filter(count__gte=size).order_by("-count", "sorted_lowercase_word")
+
+        # Paginate the queryset
+        page = self.paginate_queryset(anagram_groups)
+        if page is not None:
+            # For each group in the page, retrieve the original words
+            serializable_groups = []
+            for group in page:
+                words_in_group = Word.objects.filter(sorted_lowercase_word=group["sorted_lowercase_word"]).values_list(
+                    "word", flat=True
+                )
+                serializable_groups.append({"count": group["count"], "words": words_in_group})
+            return self.get_paginated_response(serializable_groups)
 
     @extend_schema(request=WordListSerializer, responses=IsAnagramSerializer)
     @action(detail=False, methods=["post"], url_path=r"anagram-check")

@@ -34,8 +34,9 @@ class WordListSerializer(serializers.Serializer):
         return value
 
 
-class MostAnagramsSerializer(WordListSerializer):
+class MostAnagramsSerializer(serializers.Serializer):
     count = serializers.IntegerField()
+    words = serializers.ListField(child=serializers.CharField(max_length=100))
 
 
 class WordAnagramCountSerializer(serializers.Serializer):
@@ -45,3 +46,10 @@ class WordAnagramCountSerializer(serializers.Serializer):
 
 class IsAnagramSerializer(serializers.Serializer):
     is_anagram = serializers.BooleanField()
+
+
+class PaginatedAnagramGroupSerializer(serializers.Serializer):
+    count = serializers.IntegerField()
+    next = serializers.URLField(allow_null=True)
+    previous = serializers.URLField(allow_null=True)
+    results = MostAnagramsSerializer(many=True)
