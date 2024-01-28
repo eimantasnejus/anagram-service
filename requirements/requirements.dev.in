@@ -9,3 +9,7 @@ ruff
 colorlog
 django-debug-toolbar
 django-extensions
+pytest
+pytest-cov  # for coverage report
+pytest-django  # for additional useful tools when testing
+pytest-xdist  # for parallel testing

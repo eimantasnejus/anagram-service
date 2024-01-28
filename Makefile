@@ -5,7 +5,7 @@ check:
 
 .PHONY: test
 test:
-	pytest -v -rs -n auto --cov=core --cov-report=term-missing --cov-fail-under=80
+	pytest -v -rs -n auto --cov=anagram --cov-report=term-missing --cov-fail-under=80  --reuse-db
 
 .PHONY: migrate
 migrate:

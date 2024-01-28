@@ -10,6 +10,10 @@ readme = "README.md"
 dependencies = { file = ["requirements.in"] }
 optional-dependencies = { file = ["requirements.dev.txt"] }
 
+[tool.pytest.ini_options]
+DJANGO_SETTINGS_MODULE = "anagramService.settings_test"
+python_files = ["test_*.py", "tests.py"]
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
