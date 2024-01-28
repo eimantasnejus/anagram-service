@@ -3,6 +3,9 @@ from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 
 urlpatterns = [
+    # Local apps
+    path("", include("anagram.urls")),
+    # Admin
     path("admin/", admin.site.urls),
     # 3rd party
     path("api-auth/", include("rest_framework.urls")),
