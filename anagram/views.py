@@ -13,9 +13,11 @@ from anagram.helpers import calculate_median, to_python_bool
 from anagram.models import Word
 from anagram.serializers import (
     AnagramsListSerializer,
+    IsAnagramSerializer,
     MostAnagramsSerializer,
     SimpleWordSerializer,
     WordLengthStatsSerializer,
+    WordListSerializer,
 )
 
 
@@ -89,6 +91,19 @@ class WordViewSet(ViewSet):
         words_in_biggest_group = Word.objects.filter(sorted_lowercase_word=biggest_group["sorted_lowercase_word"])
         serializer = MostAnagramsSerializer({"count": len(words_in_biggest_group), "words": words_in_biggest_group})
         return Response(serializer.data)
+
+    @extend_schema(request=WordListSerializer, responses=IsAnagramSerializer)
+    @action(detail=False, methods=["post"], url_path=r"anagram-check")
+    def check_if_words_are_anagrams(self, request):
+        """Check if a list of words are anagrams of each other."""
+        serializer = WordListSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        words = serializer.validated_data["words"]
+
+        sorted_lowercase_words = ["".join(sorted(word.lower())) for word in words]
+        is_anagram = len(set(sorted_lowercase_words)) == 1
+
+        return Response(IsAnagramSerializer({"is_anagram": is_anagram}).data)
 
 
 class AnagramViewSet(GenericViewSet):

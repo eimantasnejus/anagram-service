@@ -212,3 +212,37 @@ class TestWordAdvancedAPI:
         assert response.status_code == 200
         assert response.data["count"] == test["expected_count"]
         assert sorted(test["expected_anagrams"]) == sorted(response.data["words"])
+
+    @pytest.mark.parametrize(
+        "test",
+        [
+            {
+                "words": ["foo", "bar", "baz"],
+                "expected_response_status": 200,
+                "expected_is_anagram": False,
+            },
+            {
+                "words": ["foo", "Foo", "oof"],
+                "expected_response_status": 200,
+                "expected_is_anagram": True,
+            },
+            {
+                "words": ["foo"],
+                "expected_response_status": 400,  # At least two words are required.
+            },
+            {
+                "words": [],
+                "expected_response_status": 400,  # At least two words are required.
+            },
+        ],
+    )
+    def test_check_if_words_are_anagrams(self, client, test):
+        # Do.
+        url = reverse("words-check-if-words-are-anagrams")
+        payload = {"words": test["words"]}
+        response = client.post(url, payload, content_type="application/json")
+
+        # Check.
+        assert response.status_code == test["expected_response_status"], response.data
+        if test["expected_response_status"] == 200:
+            assert response.data["is_anagram"] == test["expected_is_anagram"]
