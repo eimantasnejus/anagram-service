@@ -1,11 +1,11 @@
 from rest_framework import serializers
 
-from anagram.models import Anagram
+from anagram.models import Word
 
 
 class WordSerializer(serializers.ModelSerializer):
     class Meta:
-        model = Anagram
+        model = Word
         fields = ["id", "word", "sorted_word"]
 
 

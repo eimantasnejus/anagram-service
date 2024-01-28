@@ -34,6 +34,7 @@ exclude = [
     "dist",
     "node_modules",
     "venv",
+    "*/migrations/*",
 ]
 
 # Same as Black.

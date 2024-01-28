@@ -8,7 +8,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ViewSet
 
-from anagram.models import Anagram
+from anagram.models import Word
 from anagram.serializers import AnagramsListSerializer, WordInputSerializer
 
 
@@ -22,13 +22,13 @@ class WordsAPIView(APIView):
         serializer.is_valid(raise_exception=True)
         words = serializer.validated_data["anagrams"]
         for word in words:
-            Anagram.objects.get_or_create(word=word, sorted_word="".join(sorted(word)))
+            Word.objects.get_or_create(word=word, sorted_word="".join(sorted(word)))
         return Response(status.HTTP_201_CREATED)
 
     @extend_schema(responses={status.HTTP_200_OK: None})
     def delete(self, request):
         """Delete all words from the database."""
-        Anagram.objects.all().delete()
+        Word.objects.all().delete()
         return Response(status.HTTP_204_NO_CONTENT)
 
 
@@ -39,7 +39,7 @@ class WordViewSet(ViewSet):
     @action(detail=False, methods=["delete"], url_path="<(?P<word>\w+)>.json")
     def delete_word(self, request, word):
         """Delete a word from the database."""
-        word_instance = get_object_or_404(Anagram, word=word)
+        word_instance = get_object_or_404(Word, word=word)
         word_instance.delete()
         return Response(status.HTTP_204_NO_CONTENT)
 
@@ -62,7 +62,7 @@ class AnagramViewSet(GenericViewSet):
     def get_anagrams_for_word(self, request, word):
         """Get anagrams for a word."""
         sorted_word = "".join(sorted(word))
-        anagram_qs = Anagram.objects.filter(sorted_word=sorted_word).exclude(word=word)
+        anagram_qs = Word.objects.filter(sorted_word=sorted_word).exclude(word=word)
         if limit := int(request.query_params.get("limit", 0)):
             anagram_qs = anagram_qs[:limit]
         anagrams_list = list(anagram_qs.values_list("word", flat=True))

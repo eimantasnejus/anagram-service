@@ -38,4 +38,4 @@ up-depenencies-only:
 
 .PHONY: load-fixtures
 load-fixtures:
-	python manage.py loaddata anagram
+	python manage.py loaddata word
