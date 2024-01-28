@@ -9,6 +9,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ViewSet
 
+from anagram.helpers import to_python_bool
 from anagram.models import Word
 from anagram.serializers import AnagramsListSerializer, WordInputSerializer
 
@@ -61,6 +62,7 @@ class WordViewSet(ViewSet):
         )
         median = self._calculate_median_word_length()
         average = stats["average_word_length"]
+        # TODO: Use serializer here.
         return Response(
             {
                 "total_words": stats["words_count"],
@@ -72,6 +74,7 @@ class WordViewSet(ViewSet):
             status=status.HTTP_200_OK,
         )
 
+    # TODO: Move to helpers.
     @staticmethod
     def _calculate_median_word_length() -> float | None:
         lengths = list(Word.objects.values_list("length", flat=True).order_by("length"))
@@ -96,17 +99,26 @@ class AnagramViewSet(GenericViewSet):
                 description="Limit the number of results returned.",
                 type=OpenApiTypes.INT,
                 location=OpenApiParameter.QUERY,
-            )
+            ),
+            OpenApiParameter(
+                name="exclude_proper_nouns",
+                description="Exclude proper nouns from the results.",
+                type=OpenApiTypes.BOOL,
+                location=OpenApiParameter.QUERY,
+            ),
         ],
     )
     @action(detail=False, methods=["get"], url_path=r"<(?P<word>\w+)>.json")
     def get_anagrams_for_word(self, request, word):
         """Get anagrams for a word."""
-        sorted_word = "".join(sorted(word))
-        anagram_qs = Word.objects.filter(sorted_word=sorted_word).exclude(word=word)
+        sorted_lowercase_word = "".join(sorted(word.lower()))
+        anagram_qs = Word.objects.filter(sorted_lowercase_word=sorted_lowercase_word).exclude(word=word)
         limit = request.query_params.get("limit")
         if limit is not None:
             anagram_qs = anagram_qs[: int(limit)]
+        exclude_proper_nouns = request.query_params.get("exclude_proper_nouns")
+        if exclude_proper_nouns and to_python_bool(exclude_proper_nouns):
+            anagram_qs = anagram_qs.exclude(is_proper_noun=True)
         anagrams_list = list(anagram_qs.values_list("word", flat=True))
         serializer = self.get_serializer({"anagrams": anagrams_list})
         return Response(data=serializer.data, status=status.HTTP_200_OK)

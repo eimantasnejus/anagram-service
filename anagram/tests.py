@@ -61,7 +61,7 @@ class TestWordBasicCRUDAPI:
 
     @pytest.mark.parametrize(
         "word,expected_count",
-        [("foo", 2), ("bar", 1), ("baz", 1), ("ofo", 2), ("rab", 1), ("zab", 1), ("Zab", 0), ("zzz", 0)],
+        [("foo", 2), ("bar", 1), ("baz", 1), ("ofo", 2), ("rab", 1), ("zab", 1), ("Zab", 2), ("zzz", 0)],
     )
     def test_get_anagrams_for_word(self, client, word, expected_count):
         # Setup.
@@ -84,6 +84,24 @@ class TestWordBasicCRUDAPI:
         url = reverse("anagrams-get-anagrams-for-word", kwargs={"word": "foo"})
         if limit is not None:
             url = f"{url}?limit={limit}"
+        response = client.get(f"{url}", content_type="application/json")
+
+        # Check.
+        assert response.status_code == 200
+        assert len(response.data["anagrams"]) == expected_count
+
+    @pytest.mark.parametrize(
+        "exclude_proper_nouns,expected_count",
+        [(True, 1), ("true", 1), ("True", 1), (False, 3), ("false", 3), ("False", 3)],
+    )
+    def test_get_anagrams_for_word_with_proper_noun_toggle(self, client, exclude_proper_nouns, expected_count):
+        # Setup.
+        self._setup_words(client, ["food", "Food", "Doof", "doof", "rab", "zab", "oof"])
+
+        # Do.
+        url = reverse("anagrams-get-anagrams-for-word", kwargs={"word": "food"})
+        if exclude_proper_nouns is not None:
+            url = f"{url}?exclude_proper_nouns={exclude_proper_nouns}"
         response = client.get(f"{url}", content_type="application/json")
 
         # Check.
