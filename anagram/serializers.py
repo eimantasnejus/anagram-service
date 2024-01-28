@@ -25,11 +25,23 @@ class WordLengthStatsSerializer(serializers.Serializer):
     median_word_length = serializers.FloatField()
 
 
-class MostAnagramsSerializer(serializers.Serializer):
-    count = serializers.IntegerField()
+class WordListSerializer(serializers.Serializer):
     words = serializers.ListField(child=serializers.CharField(max_length=100))
+
+    def validate_words(self, value):
+        if len(value) < 2:
+            raise serializers.ValidationError("At least two words are required.")
+        return value
+
+
+class MostAnagramsSerializer(WordListSerializer):
+    count = serializers.IntegerField()
 
 
 class WordAnagramCountSerializer(serializers.Serializer):
     word = serializers.CharField(max_length=100)
     anagrams_count = serializers.IntegerField()
+
+
+class IsAnagramSerializer(serializers.Serializer):
+    is_anagram = serializers.BooleanField()
