@@ -5,7 +5,6 @@ from drf_spectacular.utils import OpenApiParameter, extend_schema
 from rest_framework import status
 from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
-from rest_framework.pagination import PageNumberPagination
 from rest_framework.permissions import AllowAny
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -53,8 +52,6 @@ class WordAPIView(APIView):
 class WordViewSet(GenericViewSet):
     permission_classes = [AllowAny]
     serializer_class = SimpleWordSerializer
-    pagination_class = PageNumberPagination
-    pagination_class.page_size = 10
 
     @action(detail=False, methods=["delete"], url_path=r"<(?P<word>\w+)>.json")
     def delete_word(self, request, word):
@@ -189,3 +186,10 @@ class AnagramViewSet(GenericViewSet):
         anagrams_list = list(anagram_qs.values_list("word", flat=True))
         serializer = self.get_serializer({"anagrams": anagrams_list})
         return Response(data=serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["delete"], url_path=r"delete/<(?P<word>\w+)>")
+    def delete_word_and_anagrams(self, request, word):
+        """Delete a word and words that are its anagrams from the database."""
+        sorted_lowercase_word = "".join(sorted(word.lower()))
+        Word.objects.filter(sorted_lowercase_word=sorted_lowercase_word).delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)

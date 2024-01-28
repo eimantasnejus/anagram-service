@@ -105,7 +105,7 @@ class TestWordBasicCRUDAPI:
         response = client.get(f"{url}", content_type="application/json")
 
         # Check.
-        assert response.status_code == 200
+        assert response.status_code == 200, response.data
         assert len(response.data["anagrams"]) == expected_count
 
 
@@ -424,3 +424,22 @@ class TestWordAdvancedAPI:
         assert response.status_code == test["expected_response_status"], response.data
         if test["expected_response_status"] == 200:
             assert response.data["is_anagram"] == test["expected_is_anagram"]
+
+    def test_delete_words_and_its_anagrams(self, client):
+        # Setup.
+        self._setup_words(client, ["foo", "bar", "ofo", "zab", "oof", "Foo"])
+
+        # Do.
+        url = reverse("anagrams-delete-word-and-anagrams", kwargs={"word": "oof"})
+        response = client.delete(url, content_type="application/json")
+
+        # Check.
+        assert response.status_code == 204
+        assert response.data is None
+        assert Word.objects.count() == 2
+        assert not Word.objects.filter(word="foo").exists()
+        assert not Word.objects.filter(word="ofo").exists()
+        assert not Word.objects.filter(word="oof").exists()
+        assert not Word.objects.filter(word="Foo").exists()
+        assert Word.objects.filter(word="bar").exists()
+        assert Word.objects.filter(word="zab").exists()
