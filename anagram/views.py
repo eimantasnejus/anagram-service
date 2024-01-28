@@ -11,7 +11,12 @@ from rest_framework.viewsets import GenericViewSet, ViewSet
 
 from anagram.helpers import calculate_median, to_python_bool
 from anagram.models import Word
-from anagram.serializers import AnagramsListSerializer, WordInputSerializer, WordLengthStatsSerializer
+from anagram.serializers import (
+    AnagramsListSerializer,
+    MostAnagramsSerializer,
+    SimpleWordSerializer,
+    WordLengthStatsSerializer,
+)
 
 
 class WordAPIView(APIView):
@@ -42,7 +47,7 @@ class WordAPIView(APIView):
 
 class WordViewSet(ViewSet):
     permission_classes = [AllowAny]
-    serializer_class = WordInputSerializer
+    serializer_class = SimpleWordSerializer
 
     @action(detail=False, methods=["delete"], url_path=r"<(?P<word>\w+)>.json")
     def delete_word(self, request, word):
@@ -73,6 +78,17 @@ class WordViewSet(ViewSet):
             }
         )
         return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @action(detail=False, methods=["get"], url_path=r"biggest-anagram-group", serializer_class=MostAnagramsSerializer)
+    def get_biggest_anagram_group(self, request):
+        """Get the biggest group of words that are anagrams of each other."""
+        anagram_groups = Word.objects.values("sorted_lowercase_word").annotate(count=Count("id"))
+        biggest_group = anagram_groups.order_by("-count", "sorted_lowercase_word").first()
+        if biggest_group is None:
+            return Response(MostAnagramsSerializer({"count": 0, "words": []}).data)
+        words_in_biggest_group = Word.objects.filter(sorted_lowercase_word=biggest_group["sorted_lowercase_word"])
+        serializer = MostAnagramsSerializer({"count": len(words_in_biggest_group), "words": words_in_biggest_group})
+        return Response(serializer.data)
 
 
 class AnagramViewSet(GenericViewSet):

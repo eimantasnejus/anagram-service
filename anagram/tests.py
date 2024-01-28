@@ -179,3 +179,36 @@ class TestWordAdvancedAPI:
         assert response.data["max_word_length"] == test["expected"]["max_word_length"]
         assert response.data["median_word_length"] == test["expected"]["median_word_length"]
         assert response.data["average_word_length"] == test["expected"]["average_word_length"]
+
+    @pytest.mark.parametrize(
+        "test",
+        [
+            {
+                "words": ["foo", "bar", "baz", "ofo", "rab", "zab", "oof", "Foo"],
+                "expected_count": 4,
+                "expected_anagrams": ["foo", "ofo", "oof", "Foo"],
+            },
+            {
+                "words": ["foo", "bar"],
+                "expected_count": 1,
+                "expected_anagrams": ["bar"],  # Secondary sorting kicks in here.
+            },
+            {
+                "words": [],
+                "expected_count": 0,
+                "expected_anagrams": [],
+            },
+        ],
+    )
+    def test_get_biggest_anagram_group(self, client, test):
+        # Setup.
+        self._setup_words(client, test["words"])
+
+        # Do.
+        url = reverse("words-get-biggest-anagram-group")
+        response = client.get(url, content_type="application/json")
+
+        # Check.
+        assert response.status_code == 200
+        assert response.data["count"] == test["expected_count"]
+        assert sorted(test["expected_anagrams"]) == sorted(response.data["words"])
