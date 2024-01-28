@@ -15,3 +15,11 @@ class AnagramsListSerializer(serializers.Serializer):
 
 class WordInputSerializer(serializers.Serializer):
     word = serializers.CharField(max_length=100)
+
+
+class WordLengthStatsSerializer(serializers.Serializer):
+    total_words = serializers.IntegerField()
+    min_word_length = serializers.IntegerField()
+    max_word_length = serializers.IntegerField()
+    average_word_length = serializers.FloatField()
+    median_word_length = serializers.FloatField()

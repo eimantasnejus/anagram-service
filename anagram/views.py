@@ -9,9 +9,9 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.viewsets import GenericViewSet, ViewSet
 
-from anagram.helpers import to_python_bool
+from anagram.helpers import calculate_median, to_python_bool
 from anagram.models import Word
-from anagram.serializers import AnagramsListSerializer, WordInputSerializer
+from anagram.serializers import AnagramsListSerializer, WordInputSerializer, WordLengthStatsSerializer
 
 
 class WordAPIView(APIView):
@@ -51,41 +51,28 @@ class WordViewSet(ViewSet):
         word_instance.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-    @action(detail=False, methods=["get"], url_path=r"length-stats")
+    @action(detail=False, methods=["get"], url_path=r"length-stats", serializer_class=WordLengthStatsSerializer)
     def get_word_length_statistics(self, request):
-        """Get statistics about the database."""
+        """Collect statistics about length of words in database."""
         stats = Word.objects.aggregate(
             words_count=Count("id"),
             min_word_length=Min("length"),
             max_word_length=Max("length"),
             average_word_length=Avg("length"),
         )
-        median = self._calculate_median_word_length()
+        median = calculate_median(list(Word.objects.values_list("length", flat=True).order_by("length")))
         average = stats["average_word_length"]
-        # TODO: Use serializer here.
-        return Response(
+
+        serializer = WordLengthStatsSerializer(
             {
                 "total_words": stats["words_count"],
                 "min_word_length": stats["min_word_length"],
                 "max_word_length": stats["max_word_length"],
                 "median_word_length": float(f"{median:.4f}") if median is not None else None,
                 "average_word_length": float(f"{average:.4f}") if average is not None else None,
-            },
-            status=status.HTTP_200_OK,
+            }
         )
-
-    # TODO: Move to helpers.
-    @staticmethod
-    def _calculate_median_word_length() -> float | None:
-        lengths = list(Word.objects.values_list("length", flat=True).order_by("length"))
-        if not lengths:
-            return None
-
-        count = len(lengths)
-        if count % 2 == 1:
-            return lengths[count // 2]
-        else:
-            return (lengths[count // 2 - 1] + lengths[count // 2]) / 2
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class AnagramViewSet(GenericViewSet):
