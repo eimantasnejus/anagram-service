@@ -19,7 +19,8 @@ with open(INPUT_FILE) as f:
                     "word": word,
                     "sorted_word": "".join(sorted(word)),
                     "sorted_lowercase_word": "".join(sorted(word.lower())),
-                    "is_proper_noun": word[0].isupper(),
+                    "is_proper_noun": word.istitle(),
+                    "length": len(word),
                 },
             }
         )

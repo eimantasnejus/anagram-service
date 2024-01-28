@@ -2,7 +2,7 @@ from django.urls import path, reverse_lazy
 from django.views.generic import RedirectView
 from rest_framework.routers import DefaultRouter
 
-from anagram.views import AnagramViewSet, WordsAPIView, WordViewSet
+from anagram.views import AnagramViewSet, WordAPIView, WordViewSet
 
 router = DefaultRouter()
 
@@ -14,5 +14,5 @@ urlpatterns = router.urls + [
     # Default redirect to Swagger UI
     path("", RedirectView.as_view(url=reverse_lazy("swagger-ui")), name="index"),
     # Words / Anagrams related URLs
-    path("words.json/", WordsAPIView.as_view(), name="words"),
+    path("words.json/", WordAPIView.as_view(), name="words"),
 ]
