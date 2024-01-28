@@ -14,5 +14,5 @@ urlpatterns = router.urls + [
     # Default redirect to Swagger UI
     path("", RedirectView.as_view(url=reverse_lazy("swagger-ui")), name="index"),
     # Words / Anagrams related URLs
-    path("words.json/", WordsAPIView.as_view(), name="home"),
+    path("words.json/", WordsAPIView.as_view(), name="words"),
 ]
