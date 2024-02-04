@@ -10,9 +10,9 @@ router.register("words", WordViewSet, basename="words")
 router.register("anagrams", AnagramViewSet, basename="anagrams")
 
 
-urlpatterns = router.urls + [
+urlpatterns = [
     # Default redirect to Swagger UI
     path("", RedirectView.as_view(url=reverse_lazy("swagger-ui")), name="index"),
     # Words / Anagrams related URLs
     path("words.json/", WordAPIView.as_view(), name="words"),
-]
+] + router.urls
