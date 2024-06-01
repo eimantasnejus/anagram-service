@@ -19,7 +19,7 @@ authlib==1.3.0
 billiard==4.2.0
     # via celery
 celery==5.3.6
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 certifi==2023.11.17
     # via requests
 cffi==1.16.0
@@ -41,7 +41,7 @@ click-plugins==1.1.1
 click-repl==0.3.0
     # via celery
 colorlog==6.8.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 coverage[toml]==7.4.1
     # via pytest-cov
 cryptography==41.0.7
@@ -52,7 +52,7 @@ diff-match-patch==20230430
     # via django-import-export
 django==4.2.9
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   django-ckeditor
     #   django-cors-headers
     #   django-debug-toolbar
@@ -68,48 +68,48 @@ django==4.2.9
     #   drf-spectacular
     #   model-bakery
 django-ckeditor==6.7.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-cors-headers==4.3.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-debug-toolbar==4.2.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 django-extensions==3.2.3
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 django-filter==23.5
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-import-export==3.3.6
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-js-asset==2.2.0
     # via django-ckeditor
 django-solo==2.2.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 django-stubs==4.2.7
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 django-stubs-ext==4.2.7
     # via django-stubs
 djangorestframework==3.14.0
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   djangorestframework-simplejwt
     #   drf-spectacular
 djangorestframework-simplejwt==5.3.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 dparse==0.6.4b0
     # via
     #   safety
     #   safety-schemas
 drf-spectacular==0.27.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 et-xmlfile==1.1.0
     # via openpyxl
 execnet==2.0.2
     # via pytest-xdist
 flake8==7.0.0
     # via
-    #   -r requirements/requirements.dev.in
+    #   -r requirements.dev.in
     #   flake8-pyproject
 flake8-pyproject==1.2.3
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 idna==3.6
     # via requests
 inflection==0.5.1
@@ -137,9 +137,9 @@ mccabe==0.7.0
 mdurl==0.1.2
     # via markdown-it-py
 model-bakery==1.17.0
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 mypy==1.8.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 mypy-extensions==1.0.0
     # via mypy
 odfpy==1.4.1
@@ -158,7 +158,7 @@ pluggy==1.4.0
 prompt-toolkit==3.0.43
     # via click-repl
 psycopg2-binary==2.9.9
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 pycodestyle==2.11.1
     # via flake8
 pycparser==2.21
@@ -175,27 +175,27 @@ pyjwt==2.8.0
     # via djangorestframework-simplejwt
 pytest==8.0.0
     # via
-    #   -r requirements/requirements.dev.in
+    #   -r requirements.dev.in
     #   pytest-cov
     #   pytest-django
     #   pytest-xdist
 pytest-cov==4.1.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 pytest-django==4.7.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 pytest-xdist==3.5.0
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 python-dateutil==2.8.2
     # via celery
 pytz==2023.3.post1
     # via djangorestframework
 pyyaml==6.0.1
     # via
-    #   -r requirements/requirements.in
+    #   -r requirements.in
     #   drf-spectacular
     #   tablib
 redis==5.0.1
-    # via -r requirements/requirements.in
+    # via -r requirements.in
 referencing==0.32.1
     # via
     #   jsonschema
@@ -215,14 +215,14 @@ ruamel-yaml==0.18.5
 ruamel-yaml-clib==0.2.8
     # via ruamel-yaml
 ruff==0.1.14
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 safety==3.0.1
-    # via -r requirements/requirements.dev.in
+    # via -r requirements.dev.in
 safety-schemas==0.0.1
     # via safety
 six==1.16.0
     # via python-dateutil
-sqlparse==0.4.4
+sqlparse==0.5.0
     # via
     #   django
     #   django-debug-toolbar
